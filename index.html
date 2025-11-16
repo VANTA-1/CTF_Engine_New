@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RED5 CTF :: ACCESS TERMINAL</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body { 
+            font-family: 'Share Tech Mono', monospace;
+            background: #000;
+            color: #0f0;
+            overflow-x: hidden;
+            position: relative;
+        }
+        
+        /* Matrix rain effect background */
+        #matrix-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            opacity: 0.15;
+        }
+        
+        .container { 
+            max-width: 1200px;
+            margin: auto;
+            padding: 2rem;
+            position: relative;
+            z-index: 1;
+        }
+        
+        /* Glitch header */
+        h1 { 
+            color: #ff0033;
+            text-align: center;
+            font-size: 3rem;
+            padding: 2rem 0;
+            text-shadow: 0 0 10px #ff0033, 0 0 20px #ff0033;
+            animation: glitch 2s infinite;
+            letter-spacing: 0.3rem;
+            border-bottom: 2px solid #ff0033;
+            margin-bottom: 1rem;
+        }
+        
+        @keyframes glitch {
+            0%, 100% { text-shadow: 0 0 10px #ff0033, 0 0 20px #ff0033; }
+            25% { text-shadow: -2px 0 10px #0ff, 2px 2px 20px #ff0033; }
+            50% { text-shadow: 2px -2px 10px #ff0033, -2px 0 20px #0ff; }
+            75% { text-shadow: 0 0 10px #0ff, 0 0 20px #ff0033; }
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #0ff;
+            font-size: 0.9rem;
+            margin-bottom: 2rem;
+            text-shadow: 0 0 5px #0ff;
+            letter-spacing: 0.2rem;
+        }
+        
+        /* Terminal-style login */
+        .auth-section { 
+            background: rgba(0, 0, 0, 0.9);
+            border: 2px solid #0f0;
+            border-radius: 0;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.3), inset 0 0 20px rgba(0, 255, 0, 0.1);
+            position: relative;
+        }
+        
+        .auth-section::before {
+            content: '> SECURE ACCESS TERMINAL';
+            display: block;
+            color: #0ff;
+            margin-bottom: 1rem;
+            font-size: 0.8rem;
+            text-shadow: 0 0 5px #0ff;
+        }
+        
+        .auth-form { 
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .auth-input { 
+            background: rgba(0, 20, 0, 0.8);
+            border: 1px solid #0f0;
+            color: #0f0;
+            padding: 0.8rem;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 1rem;
+            text-shadow: 0 0 5px #0f0;
+        }
+        
+        .auth-input:focus { 
+            outline: none;
+            box-shadow: 0 0 10px #0f0;
+            border-color: #0ff;
+        }
+        
+        .auth-input::placeholder {
+            color: #0a0;
+            opacity: 0.7;
+        }
+        
+        #user-status { 
+            font-size: 1.2rem;
+            color: #0ff;
+            text-shadow: 0 0 10px #0ff;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        .submit-button { 
+            background: rgba(255, 0, 51, 0.2);
+            color: #ff0033;
+            border: 2px solid #ff0033;
+            padding: 1rem;
+            font-family: 'Share Tech Mono', monospace;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-shadow: 0 0 5px #ff0033;
+            letter-spacing: 0.2rem;
+        }
+        
+        .submit-button:hover { 
+            background: rgba(255, 0, 51, 0.4);
+            box-shadow: 0 0 20px #ff0033;
+            transform: scale(1.02);
+        }
+        
+        .submit-button:disabled { 
+            background: rgba(50, 50, 50, 0.2);
+            color: #555;
+            border-color: #555;
+            cursor: not-allowed;
+            text-shadow: none;
+        }
+        
+        /* Challenge cards */
+        .challenge-list { 
+            list-style-type: none;
+        }
+        
+        .challenge-card { 
+            background: rgba(0, 0, 0, 0.9);
+            border: 1px solid #0f0;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            position: relative;
+            box-shadow: 0 0 15px rgba(0, 255, 0, 0.2);
+            transition: all 0.3s;
+        }
+        
+        .challenge-card:hover { 
+            border-color: #0ff;
+            box-shadow: 0 0 25px rgba(0, 255, 255, 0.4);
+            transform: translateX(5px);
+        }
+        
+        .challenge-card::before {
+            content: '[ CLASSIFIED ]';
+            position: absolute;
+            top: -10px;
+            right: 10px;
+            background: #000;
+            padding: 0 10px;
+            color: #ff0033;
+            font-size: 0.7rem;
+            text-shadow: 0 0 5px #ff0033;
+        }
+        
+        .challenge-name { 
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #0ff;
+            margin-bottom: 0.5rem;
+            text-shadow: 0 0 10px #0ff;
+        }
+        
+        .challenge-description { 
+            font-size: 0.9rem;
+            color: #0f0;
+            margin-bottom: 1rem;
+            line-height: 1.6;
+        }
+        
+        .challenge-points { 
+            font-size: 1.1rem;
+            color: #ff0033;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            text-shadow: 0 0 5px #ff0033;
+        }
+        
+        .submit-form { 
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .flag-input { 
+            flex-grow: 1;
+            background: rgba(0, 20, 0, 0.8);
+            border: 1px solid #0f0;
+            color: #0f0;
+            padding: 0.8rem;
+            font-family: 'Share Tech Mono', monospace;
+            text-shadow: 0 0 5px #0f0;
+        }
+        
+        .flag-input:focus { 
+            outline: none;
+            box-shadow: 0 0 10px #0f0;
+        }
+        
+        .feedback { 
+            margin-top: 1rem;
+            font-weight: bold;
+            padding: 0.5rem;
+            animation: fadeIn 0.5s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .feedback.correct { 
+            color: #0f0;
+            text-shadow: 0 0 10px #0f0;
+            border-left: 3px solid #0f0;
+            padding-left: 1rem;
+        }
+        
+        .feedback.incorrect { 
+            color: #ff0033;
+            text-shadow: 0 0 10px #ff0033;
+            border-left: 3px solid #ff0033;
+            padding-left: 1rem;
+        }
+        
+        /* Scoreboard */
+        .scoreboard-section { 
+            margin-top: 3rem;
+        }
+        
+        .scoreboard-section h2 {
+            color: #ff0033;
+            text-align: center;
+            font-size: 2rem;
+            margin-bottom: 2rem;
+            text-shadow: 0 0 10px #ff0033;
+            letter-spacing: 0.3rem;
+        }
+        
+        .scoreboard-list { 
+            list-style-type: none;
+        }
+        
+        .scoreboard-entry { 
+            background: rgba(0, 0, 0, 0.9);
+            border-left: 4px solid #0f0;
+            padding: 1rem 1.5rem;
+            margin-bottom: 0.8rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.2);
+            transition: all 0.3s;
+        }
+        
+        .scoreboard-entry:hover {
+            transform: translateX(10px);
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.4);
+        }
+        
+        .scoreboard-entry.rank-1 { 
+            border-left-color: #ffd700;
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
+        }
+        
+        .scoreboard-entry.rank-1 span:first-child {
+            color: #ffd700;
+            text-shadow: 0 0 10px #ffd700;
+        }
+        
+        .scoreboard-entry.rank-2 { 
+            border-left-color: #c0c0c0;
+            box-shadow: 0 0 15px rgba(192, 192, 192, 0.3);
+        }
+        
+        .scoreboard-entry.rank-2 span:first-child {
+            color: #c0c0c0;
+            text-shadow: 0 0 10px #c0c0c0;
+        }
+        
+        .scoreboard-entry.rank-3 { 
+            border-left-color: #cd7f32;
+            box-shadow: 0 0 15px rgba(205, 127, 50, 0.3);
+        }
+        
+        .scoreboard-entry.rank-3 span:first-child {
+            color: #cd7f32;
+            text-shadow: 0 0 10px #cd7f32;
+        }
+        
+        #loading-message, #scoreboard-loading {
+            text-align: center;
+            color: #0ff;
+            padding: 2rem;
+            animation: blink 1.5s infinite;
+        }
+        
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+        
+        /* RED5 branding footer */
+        .footer {
+            text-align: center;
+            margin-top: 3rem;
+            padding: 2rem;
+            border-top: 1px solid #ff0033;
+        }
+        
+        .footer-logo {
+            font-size: 2rem;
+            color: #ff0033;
+            text-shadow: 0 0 20px #ff0033;
+            letter-spacing: 1rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .footer-text {
+            color: #0ff;
+            font-size: 0.8rem;
+            text-shadow: 0 0 5px #0ff;
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="matrix-bg"></canvas>
+
+    <div class="container">
+        <h1>RED5 CTF TERMINAL</h1>
+        <div class="subtitle">:: UNAUTHORIZED ACCESS PROHIBITED ::</div>
+
+        <div class="auth-section" id="auth-section">
+            <div id="login-form" class="auth-form">
+                <input type="text" id="username-input" class="auth-input" placeholder="USERNAME">
+                <input type="password" id="password-input" class="auth-input" placeholder="PASSWORD">
+                <button id="login-button" class="submit-button">AUTHENTICATE</button>
+            </div>
+            <div id="user-status" style="display: none;">
+                > AUTHENTICATED AS: <strong id="current-user"></strong>
+            </div>
+        </div>
+
+        <ul id="challenge-list" class="challenge-list">
+            <li id="loading-message">LOADING CLASSIFIED DATA...</li>
+        </ul>
+
+        <div class="scoreboard-section">
+            <h2>[ LEADERBOARD ]</h2>
+            <ul id="scoreboard-list" class="scoreboard-list">
+                <li id="scoreboard-loading">ACCESSING DATABASE...</li>
+            </ul>
+        </div>
+        
+        <div class="footer">
+            <div class="footer-logo">RED5</div>
+            <div class="footer-text">ELITE HACKER COLLECTIVE // EST. 2025</div>
+        </div>
+    </div>
+
+    <script>
+        // Matrix rain effect
+        const canvas = document.getElementById('matrix-bg');
+        const ctx = canvas.getContext('2d');
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%^&*()';
+        const fontSize = 14;
+        const columns = canvas.width / fontSize;
+        const drops = Array(Math.floor(columns)).fill(1);
+
+        function drawMatrix() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            ctx.fillStyle = '#0f0';
+            ctx.font = fontSize + 'px monospace';
+
+            for (let i = 0; i < drops.length; i++) {
+                const text = letters[Math.floor(Math.random() * letters.length)];
+                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+
+                if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+                    drops[i] = 0;
+                }
+                drops[i]++;
+            }
+        }
+
+        setInterval(drawMatrix, 50);
+
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+
+        // CTF functionality
+        let authToken = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('challenge-list').style.display = 'none';
+            document.querySelector('.scoreboard-section').style.display = 'none';
+            
+            fetchChallenges();
+            fetchScoreboard();
+            setupLogin();
+        });
+
+        function setupLogin() {
+            const loginButton = document.getElementById('login-button');
+            loginButton.addEventListener('click', performLogin);
+            
+            document.getElementById('password-input').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') performLogin();
+            });
+        }
+
+        async function performLogin() {
+            const username = document.getElementById('username-input').value;
+            const password = document.getElementById('password-input').value;
+            const loginForm = document.getElementById('login-form');
+            const userStatus = document.getElementById('user-status');
+            const currentUserSpan = document.getElementById('current-user');
+
+            if (!username || !password) {
+                alert('> ERROR: CREDENTIALS REQUIRED');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('username', username);
+            formData.append('password', password);
+
+            try {
+                const response = await fetch('http://127.0.0.1:8000/token', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error('Login failed');
+                }
+
+                const data = await response.json();
+                authToken = data.access_token;
+                currentUserSpan.textContent = username;
+
+                loginForm.style.display = 'none';
+                userStatus.style.display = 'block';
+                
+                document.getElementById('challenge-list').style.display = 'block';
+                document.querySelector('.scoreboard-section').style.display = 'block';
+
+            } catch (error) {
+                console.error('Login error:', error);
+                alert('> ACCESS DENIED: INVALID CREDENTIALS');
+            }
+        }
+
+        async function fetchChallenges() {
+            const challengeListElement = document.getElementById('challenge-list');
+            const loadingMessage = document.getElementById('loading-message');
+            try {
+                const response = await fetch('http://127.0.0.1:8000/challenges/');
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                const challenges = await response.json();
+                challengeListElement.innerHTML = '';
+                challenges.forEach(challenge => {
+                    const li = document.createElement('li');
+                    li.className = 'challenge-card';
+                    li.id = `challenge-${challenge.id}`;
+                    li.innerHTML = `
+                        <h2 class="challenge-name">> ${challenge.name}</h2>
+                        <p class="challenge-description">${challenge.description}</p>
+                        <p class="challenge-points">REWARD: ${challenge.points} POINTS</p>
+                        <div class="submit-form">
+                            <input type="text" class="flag-input" id="flag-input-${challenge.id}" placeholder="ENTER FLAG...">
+                            <button class="submit-button" id="submit-button-${challenge.id}" onclick="submitFlag(${challenge.id})">SUBMIT</button>
+                        </div>
+                        <div id="feedback-${challenge.id}" class="feedback"></div>
+                    `;
+                    challengeListElement.appendChild(li);
+                });
+            } catch (error) {
+                console.error('Failed to fetch challenges:', error);
+                loadingMessage.textContent = '> ERROR: UNABLE TO LOAD DATA';
+            }
+        }
+
+        async function fetchScoreboard() {
+            const scoreboardList = document.getElementById('scoreboard-list');
+            const loadingMessage = document.getElementById('scoreboard-loading');
+            try {
+                const response = await fetch('http://127.0.0.1:8000/scoreboard');
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                const scoreboard = await response.json();
+                scoreboardList.innerHTML = '';
+                if (scoreboard.length === 0) {
+                    scoreboardList.innerHTML = '<li id="scoreboard-loading">> NO RECORDS FOUND</li>';
+                    return;
+                }
+                scoreboard.forEach((entry, index) => {
+                    const li = document.createElement('li');
+                    li.className = `scoreboard-entry rank-${index + 1}`;
+                    li.innerHTML = `
+                        <span>#${index + 1} ${entry.username}</span>
+                        <span><strong>${entry.score}</strong> PTS</span>
+                    `;
+                    scoreboardList.appendChild(li);
+                });
+            } catch (error) {
+                console.error('Failed to fetch scoreboard:', error);
+                loadingMessage.textContent = '> ERROR: DATABASE UNREACHABLE';
+            }
+        }
+
+        async function submitFlag(challengeId) {
+            const inputElement = document.getElementById(`flag-input-${challengeId}`);
+            const buttonElement = document.getElementById(`submit-button-${challengeId}`);
+            const feedbackElement = document.getElementById(`feedback-${challengeId}`);
+            const flag = inputElement.value;
+
+            if (!flag) {
+                feedbackElement.textContent = '> ERROR: FLAG REQUIRED';
+                feedbackElement.className = 'feedback incorrect';
+                return;
+            }
+            
+            if (!authToken) {
+                feedbackElement.textContent = '> ERROR: AUTHENTICATION REQUIRED';
+                feedbackElement.className = 'feedback incorrect';
+                return;
+            }
+
+            buttonElement.disabled = true;
+            buttonElement.textContent = 'VERIFYING...';
+            feedbackElement.textContent = '';
+
+            try {
+                const response = await fetch(`http://127.0.0.1:8000/challenges/${challengeId}/submit`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({ flag: flag }),
+                });
+                const result = await response.json();
+                if (result.correct) {
+                    feedbackElement.textContent = '> ACCESS GRANTED // FLAG ACCEPTED';
+                    feedbackElement.className = 'feedback correct';
+                    inputElement.disabled = true;
+                    fetchScoreboard();
+                } else {
+                    feedbackElement.textContent = '> ACCESS DENIED // INVALID FLAG';
+                    feedbackElement.className = 'feedback incorrect';
+                }
+            } catch (error) {
+                console.error('Submission failed:', error);
+                feedbackElement.textContent = '> SYSTEM ERROR // TRY AGAIN';
+                feedbackElement.className = 'feedback incorrect';
+            } finally {
+                buttonElement.disabled = false;
+                buttonElement.textContent = 'SUBMIT';
+            }
+        }
+    </script>
+
+</body>
+</html>
